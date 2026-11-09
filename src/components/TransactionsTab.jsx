@@ -76,7 +76,7 @@ export function TransactionsTab({ transactions, onDeleteTransaction }) {
         {/* Linha de Filtros */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {/* Campo de Busca */}
-          <div className="relative flex-1 min-w-50">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
