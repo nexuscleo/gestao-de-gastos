@@ -1,0 +1,59 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+model User {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  email                String            @unique
+  name                 String
+  password             String? // Hash da senha (bcrypt)
+  emailVerified        Boolean           @default(false)
+  verificationToken    String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  transactions         Transaction[]
+  installmentPlans     InstallmentPlan[]
+}
+
+model Transaction {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description   String
+  amount        Float
+  type          String // "income" ou "expense"
+  category      String
+  date          String // YYYY-MM-DD
+  installmentId String?
+  createdAt     DateTime @default(now())
+}
+
+model InstallmentPlan {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String        @db.ObjectId
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description      String
+  type             String // "installment" ou "financing"
+  category         String
+  amount           Float
+  installmentCount Int
+  firstDueDate     String // YYYY-MM-DD
+  cancelled        Boolean       @default(false)
+  installments     Installment[]
+  createdAt        DateTime      @default(now())
+}
+
+type Installment {
+  number        Int
+  dueDate       String // YYYY-MM-DD
+  paidAt        String? // YYYY-MM-DD ou null
+  transactionId String?
+}

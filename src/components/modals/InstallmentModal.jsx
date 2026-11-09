@@ -6,7 +6,7 @@ export function InstallmentModal({ isOpen, onClose, onSubmit, form, setForm }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white">
+        <div className="sticky top-0 z-10 bg-linear-to-r from-emerald-600 to-teal-600 p-5 text-white">
           <h2 className="text-xl font-bold">Nova despesa parcelada</h2>
           <p className="mt-1 text-sm text-emerald-100">Cadastre as parcelas para acompanhar os próximos vencimentos.</p>
         </div>

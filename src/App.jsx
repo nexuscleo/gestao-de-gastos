@@ -8,6 +8,7 @@ import { TransactionsTab } from "./components/TransactionsTab";
 import { InstallmentsTab } from "./components/InstallmentsTab";
 import { TransactionModal } from "./components/modals/TransactionModal";
 import { InstallmentModal } from "./components/modals/InstallmentModal";
+import { AuthPage } from "./components/auth/AuthPage";
 import {
   todayISODate,
   addMonths,
@@ -15,6 +16,15 @@ import {
   isValidDate,
   CATEGORIES_EXPENSE,
 } from "./utils/financeUtils";
+
+function loadLocalUser() {
+  try {
+    const saved = window.localStorage.getItem("financas_user");
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
 
 function loadLocalTransactions() {
   try {
@@ -35,6 +45,7 @@ function loadLocalPlans() {
 }
 
 export default function FinanceApp() {
+  const [currentUser, setCurrentUser] = useState(loadLocalUser);
   const [transactions, setTransactions] = useState(loadLocalTransactions);
   const [plans, setPlans] = useState(loadLocalPlans);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -61,13 +72,15 @@ export default function FinanceApp() {
     firstDueDate: todayISODate(),
   });
 
-  // Sincronização inicial com o MongoDB Atlas
+  // Sincronização com o MongoDB exclusiva do usuário logado
   const fetchCloudData = async (notify = false) => {
+    if (!currentUser?.id) return;
+
     setIsSyncing(true);
     try {
       const [remoteTxs, remotePlans] = await Promise.all([
-        api.getTransactions(),
-        api.getInstallmentPlans(),
+        api.getTransactions(currentUser.id),
+        api.getInstallmentPlans(currentUser.id),
       ]);
 
       if (Array.isArray(remoteTxs)) setTransactions(remoteTxs);
@@ -84,25 +97,54 @@ export default function FinanceApp() {
   };
 
   useEffect(() => {
-    fetchCloudData();
-  }, []);
+    if (currentUser) {
+      fetchCloudData();
+    }
+  }, [currentUser]);
 
-  // Salva fallback no localStorage
+  // Salva fallback no localStorage isolado pelo ID do usuário
   useEffect(() => {
+    if (!currentUser) return;
     try {
+      window.localStorage.setItem(`finance_transactions_${currentUser.id}`, JSON.stringify(transactions));
       window.localStorage.setItem("finance_transactions", JSON.stringify(transactions));
     } catch (e) {
       console.warn("Erro ao salvar localmente:", e);
     }
-  }, [transactions]);
+  }, [transactions, currentUser]);
 
   useEffect(() => {
+    if (!currentUser) return;
     try {
+      window.localStorage.setItem(`finance_installment_plans_${currentUser.id}`, JSON.stringify(plans));
       window.localStorage.setItem("finance_installment_plans", JSON.stringify(plans));
     } catch (e) {
       console.warn("Erro ao salvar parcelamentos localmente:", e);
     }
-  }, [plans]);
+  }, [plans, currentUser]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("financas_auth_token");
+    localStorage.removeItem("financas_user");
+    setCurrentUser(null);
+    setTransactions([]);
+    setPlans([]);
+    showToast("Você saiu da sua conta.", "info");
+  };
+
+  // Se o usuário NÃO estiver autenticado, exibe SOMENTE a interface de acesso (login / cadastro)
+  if (!currentUser) {
+    return (
+      <>
+        <ToastContainer />
+        <AuthPage
+          onAuthSuccess={(user) => {
+            setCurrentUser(user);
+          }}
+        />
+      </>
+    );
+  }
 
   // Cálculos financeiros
   const totalIncome = transactions
@@ -115,12 +157,13 @@ export default function FinanceApp() {
 
   const balance = totalIncome - totalExpense;
 
-  // Handlers de Ações
+  // Handlers de Transações
   const handleSubmitTransaction = async (e) => {
     e.preventDefault();
     if (!formData.description || !formData.amount || !formData.category || !formData.date) return;
 
     const payload = {
+      userId: currentUser.id,
       type: formData.type,
       description: formData.description.trim(),
       amount: Number(formData.amount),
@@ -173,6 +216,7 @@ export default function FinanceApp() {
     })));
   };
 
+  // Handlers de Parcelamentos
   const handleSubmitPlan = async (e) => {
     e.preventDefault();
     const amount = Math.round(Number(planForm.amount) * 100) / 100;
@@ -198,6 +242,7 @@ export default function FinanceApp() {
     }));
 
     const planPayload = {
+      userId: currentUser.id,
       description: planForm.description.trim(),
       type: planForm.type,
       amount,
@@ -248,7 +293,7 @@ export default function FinanceApp() {
       if (isCloudConnected) {
         const updatedPlan = await api.payInstallment(planId, installment.number, { paidAt, createTransaction: true });
         setPlans((prev) => prev.map((p) => (p.id === planId ? updatedPlan : p)));
-        const updatedTxs = await api.getTransactions();
+        const updatedTxs = await api.getTransactions(currentUser.id);
         setTransactions(updatedTxs);
         showToast(`Parcela ${installment.number} paga e debitada!`, "success");
       } else {
@@ -306,8 +351,10 @@ export default function FinanceApp() {
       <Header
         isCloudConnected={isCloudConnected}
         isSyncing={isSyncing}
+        currentUser={currentUser}
         onSync={() => fetchCloudData(true)}
         onOpenTransactionModal={() => setShowForm(true)}
+        onLogout={handleLogout}
       />
 
       {/* Navegação Responsiva com Tabs */}
@@ -334,7 +381,7 @@ export default function FinanceApp() {
         </div>
       </nav>
 
-      {/* Conteúdo Principal */}
+      {/* Conteúdo Principal Protegido */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         {activeTab === "dashboard" && (
           <DashboardTab

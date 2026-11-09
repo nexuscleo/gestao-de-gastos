@@ -19,7 +19,7 @@ export function TransactionModal({ isOpen, onClose, onSubmit, form, setForm }) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white sticky top-0 z-10">
+        <div className="bg-linear-to-r from-emerald-600 to-teal-600 p-5 text-white sticky top-0 z-10">
           <h2 className="text-xl font-bold">Nova Transação</h2>
           <p className="text-emerald-100 text-sm mt-1">Registre sua receita ou despesa</p>
         </div>
