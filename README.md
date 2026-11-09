@@ -1,42 +1,101 @@
-# FinançasPro
+# 💰 FinançasPro - Gestão de Gastos & Parcelamentos
 
-Aplicação de gestão de gastos feita com React, Vite, Tailwind CSS e Recharts.
-As transações são armazenadas localmente no navegador.
+> Aplicação fullstack de controle financeiro pessoal, parcelamentos/financiamentos e projeção orçamentária, com arquitetura modular e persistência em nuvem (MongoDB Atlas).
 
-## Acompanhar parcelamentos e financiamentos
+---
 
-Abra a aba **Parcelamentos** e selecione **Novo parcelamento**. Informe o nome,
-o tipo de despesa, o valor de cada parcela, a quantidade, a categoria e o
-vencimento da primeira parcela. As demais datas são calculadas mensalmente,
-preservando o dia do vencimento quando possível.
+## 📌 Status Atual do Projeto
 
-O total futuro fica visível em **Total a vencer**, mas não altera o saldo nem os
-gráficos antes do pagamento. Use **Registrar pagamento** para lançar a próxima
-parcela no histórico de despesas; o progresso e os vencimentos restantes são
-atualizados automaticamente. Se excluir essa transação do histórico, a parcela
-volta a ficar pendente. É possível encerrar o acompanhamento sem apagar as
-parcelas já pagas.
+- **Versão:** 1.2.0 (Autenticação Completa & Arquitetura Modular)
+- **Data da Atualização:** 08/11/2026
+- **Status do Build:** 100% aprovado (Vite v6 & Node ESM)
+- **Banco de Dados:** Conectado ao MongoDB Atlas (banco `gestao_gastos`) via Prisma ORM 6.19.
 
-Os parcelamentos e pagamentos são mantidos no armazenamento local do navegador,
-assim como as demais transações.
+---
 
-## Requisitos
+## 🏗️ Arquitetura do Sistema
 
-- Node.js 18 ou superior
-- npm
+```
+gestao-de-gastos/
+├── backend/                              # Servidor Node.js + Express
+│   ├── prisma/
+│   │   └── schema.prisma                 # Modelos MongoDB: User, Transaction, InstallmentPlan
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── prisma.js                 # Singleton do PrismaClient
+│   │   ├── middlewares/
+│   │   │   ├── authMiddleware.js         # Proteção e extração de JWT (Bearer Token)
+│   │   │   └── errorHandler.js           # Tratamento centralizado de erros REST
+│   │   ├── services/
+│   │   │   ├── authService.js            # Lógica de login, hash bcrypt, tokens de verificação e reset
+│   │   │   ├── emailService.js           # Envio de emails (Nodemailer c/ fallback dev)
+│   │   │   ├── userService.js            # Regras e busca de usuários
+│   │   │   ├── transactionService.js     # CRUD e queries de receitas/despesas
+│   │   │   └── installmentService.js     # Pagamento e acompanhamento de parcelas
+│   │   └── routes/
+│   │       └── index.js                  # Endpoints RESTful (/api/auth, /api/transactions, etc.)
+│   ├── server.js                         # Inicialização do Express, CORS e portas
+│   └── .env                              # String de conexão MongoDB Atlas e segredos JWT
+│
+├── src/                                  # Frontend React 18 + Tailwind CSS 4 + Vite
+│   ├── components/
+│   │   ├── auth/
+│   │   │   └── AuthPage.jsx              # Portal seguro de Login, Cadastro, Validação de Código e Recuperação
+│   │   ├── modals/
+│   │   │   ├── TransactionModal.jsx      # Modal de inserção de receitas/despesas
+│   │   │   └── InstallmentModal.jsx      # Modal de criação de planos de parcelamento
+│   │   ├── DashboardTab.jsx              # Cards de saldo, receitas, despesas e gráficos Recharts
+│   │   ├── TransactionsTab.jsx           # Tabela com busca em tempo real, filtro mensal e exportação CSV
+│   │   ├── InstallmentsTab.jsx           # Gestão de parcelas a vencer, status e quitação
+│   │   ├── Header.jsx                    # Barra superior com status da nuvem e dados do usuário logado
+│   │   └── Toast.jsx                     # Sistema global de notificações e feedback de UX
+│   ├── services/
+│   │   └── api.js                        # Cliente HTTP Fetch com injeção automática de JWT
+│   ├── utils/
+│   │   └── financeUtils.js               # Formatações BRL, datas pt-BR, cálculo de parcelas e helpers
+│   ├── App.jsx                           # Orquestrador com proteção de rota (Guest vs Autenticado)
+│   └── index.css                         # Configurações de design e tipografia
+│
+└── graphify-out/                         # Base de conhecimento e grafo arquitetural do Graphify
+```
 
-## Executar localmente
+---
 
+## 🔒 Fluxo de Autenticação & Acesso
+
+1. **Acesso Bloqueado por Padrão:**
+   - Usuários não logados têm acesso exclusivamente à [`src/components/auth/AuthPage.jsx`](src/components/auth/AuthPage.jsx).
+2. **Cadastro & Confirmação de E-mail:**
+   - Senha criptografada com `bcryptjs` (salt 10).
+   - Envio de código de 6 dígitos via [`emailService.js`](backend/src/services/emailService.js).
+   - O login é bloqueado até a confirmação do e-mail (`emailVerified: true`).
+3. **Sessão JWT:**
+   - Token assinado de 7 dias armazenado no `localStorage` e anexado em todas as chamadas à API.
+4. **Recuperação de Senha:**
+   - Geração de código de uso único com expiração de 30 minutos enviada por e-mail.
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### 1. Iniciar o Backend
 ```bash
-npm install
+cd backend
 npm run dev
 ```
+*Porta padrão: `http://localhost:3000`*
 
-O Vite exibirá no terminal o endereço local para abrir no navegador.
-
-## Gerar build de produção
-
+### 2. Iniciar o Frontend
 ```bash
-npm run build
-npm run preview
+npm run dev
 ```
+*Acesse no navegador: `http://localhost:5173`*
+
+---
+
+## 📋 Próximos Passos Planejados para a Próxima Sessão
+
+- [ ] Configuração de serviço SMTP real de produção (Resend / SendGrid / Amazon SES) no `.env`.
+- [ ] Implementação de upload de avatar ou perfil do usuário.
+- [ ] Relatórios em PDF / Dashboard com metas de economia.
+- [ ] Testes automatizados (Jest / Vitest) para as regras financeiras e endpoints de autenticação.
