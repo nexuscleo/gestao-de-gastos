@@ -125,7 +125,7 @@ export function AuthPage({ onAuthSuccess }) {
         </div>
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">FinançasPro</h1>
-          <p className="text-xs sm:text-sm text-gray-500 font-medium">Controle Financeiro Pessoal & Parcelamentos</p>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium">Controle Financeiro Pessoal</p>
         </div>
       </div>
 
