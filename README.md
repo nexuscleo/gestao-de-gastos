@@ -101,6 +101,18 @@ No GitHub, em **Settings → Pages**, selecione **GitHub Actions** como origem d
 
 O Pages hospeda somente o frontend estático; a API Node.js e o MongoDB não são publicados por esse workflow. Para habilitar login, cadastro e persistência no endereço público, hospede o backend separadamente e cadastre a URL pública dele como variável `VITE_API_URL` em **Settings → Secrets and variables → Actions → Variables**. O backend também precisa permitir requisições CORS da origem `https://nexuscleo.github.io`.
 
+### API no Render
+
+O arquivo `render.yaml` configura o serviço web da API. No Render, crie um **Blueprint** a partir deste repositório e informe os valores solicitados:
+
+- `DATABASE_URL`: conexão do MongoDB Atlas.
+- `SMTP_HOST`, `SMTP_USER` e `SMTP_PASS`: credenciais de um provedor SMTP para envio dos códigos de confirmação e recuperação de senha.
+- `JWT_SECRET`: gerado automaticamente pelo Render.
+
+Após o serviço iniciar, copie sua URL pública e cadastre-a como variável `VITE_API_URL` no GitHub (o valor deve ser a URL base, sem `/api`). Em seguida, execute novamente o workflow **Deploy to GitHub Pages** na aba **Actions** para compilar o frontend apontando para a API hospedada.
+
+O plano gratuito do Render pode suspender o serviço após períodos sem uso, causando demora no primeiro acesso.
+
 ---
 
 ## 📋 Próximos Passos Planejados para a Próxima Sessão
