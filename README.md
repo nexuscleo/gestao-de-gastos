@@ -7,9 +7,11 @@
 ## 📌 Status Atual do Projeto
 
 - **Versão:** 1.2.0 (Autenticação Completa & Arquitetura Modular)
-- **Data da Atualização:** 08/11/2026
-- **Status do Build:** 100% aprovado (Vite v6 & Node ESM)
+- **Data da Atualização:** 09/11/2026
+- **Status do Build:** Build de produção Vite aprovado em 09/11/2026
 - **Banco de Dados:** Conectado ao MongoDB Atlas (banco `gestao_gastos`) via Prisma ORM 6.19.
+- **Deploy frontend:** Publicado e validado em https://nexuscleo.github.io/gestao-de-gastos/
+- **Deploy backend:** Blueprint preparado em `render.yaml`; serviço do Render ainda precisa ser criado e configurado.
 
 ---
 
