@@ -91,6 +91,16 @@ npm run dev
 ```
 *Acesse no navegador: `http://localhost:5173`*
 
+## 🌐 Publicação no GitHub Pages
+
+O workflow `.github/workflows/static.yml` compila o frontend com Vite e publica o conteúdo de `dist` no GitHub Pages a cada push para `main`. O endereço do projeto é:
+
+**https://nexuscleo.github.io/gestao-de-gastos/**
+
+No GitHub, em **Settings → Pages**, selecione **GitHub Actions** como origem da publicação. Depois, acompanhe a execução em **Actions**.
+
+O Pages hospeda somente o frontend estático; a API Node.js e o MongoDB não são publicados por esse workflow. Para habilitar login, cadastro e persistência no endereço público, hospede o backend separadamente e cadastre a URL pública dele como variável `VITE_API_URL` em **Settings → Secrets and variables → Actions → Variables**. O backend também precisa permitir requisições CORS da origem `https://nexuscleo.github.io`.
+
 ---
 
 ## 📋 Próximos Passos Planejados para a Próxima Sessão
